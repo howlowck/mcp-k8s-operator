@@ -47,9 +47,24 @@ type MCPServerReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.20.4/pkg/reconcile
 func (r *MCPServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = logf.FromContext(ctx)
+	log := logf.FromContext(ctx)
 
-	// TODO(user): your logic here
+	// Fetch the MCPServer instance
+	var mcpServer mcpv1alpha1.MCPServer
+	if err := r.Get(ctx, req.NamespacedName, &mcpServer); err != nil {
+		log.Error(err, "unable to fetch MCPServer")
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// Extract fields from the MCPServer spec
+	name := mcpServer.Spec.Name
+	transport := mcpServer.Spec.Transport
+	command := mcpServer.Spec.Command
+	args := mcpServer.Spec.Args
+
+	log.Info("Reconciling MCPServer", "name", name, "transport", transport, "command", command, "args", args)
+
+	// TODO: Add logic to handle the MCPServer fields, such as creating or updating resources
 
 	return ctrl.Result{}, nil
 }

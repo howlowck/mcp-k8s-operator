@@ -25,11 +25,17 @@ import (
 
 // MCPServerSpec defines the desired state of MCPServer.
 type MCPServerSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Name of the MCP server
+	Name string `json:"name"`
 
-	// Foo is an example field of MCPServer. Edit mcpserver_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Transport type, either "stdio" or "streamable"
+	Transport string `json:"transport"`
+
+	// Command to run
+	Command string `json:"command"`
+
+	// List of arguments for the command
+	Args []string `json:"args"`
 }
 
 // MCPServerStatus defines the observed state of MCPServer.

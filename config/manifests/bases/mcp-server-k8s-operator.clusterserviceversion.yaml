@@ -1,0 +1,49 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: mcp-server-k8s-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: MCPServer is the Schema for the mcpservers API.
+      displayName: MCPServer
+      kind: MCPServer
+      name: mcpservers.mcp.lifeishao.com
+      version: v1alpha1
+  description: A Kubernetes Operator for managing MCP Servers
+  displayName: MCP Server Kubernetes Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - mcp
+  - mcp-servers
+  - management
+  links:
+  - name: Mcp Server K8s Operator
+    url: https://mcp-server-k8s-operator.domain
+  maintainers:
+  - email: 338265+howlowck@users.noreply.github.com
+    name: Hao
+  maturity: alpha
+  provider:
+    name: lifeishao.com
+  version: 0.0.0

@@ -1,32 +1,21 @@
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: manager-role
+  creationTimestamp: null
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: mcp-server-k8s-operator
+  name: mcp-server-k8s-operator-mcpserver-admin-role
 rules:
 - apiGroups:
   - mcp.lifeishao.com
   resources:
   - mcpservers
   verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mcp.lifeishao.com
-  resources:
-  - mcpservers/finalizers
-  verbs:
-  - update
+  - '*'
 - apiGroups:
   - mcp.lifeishao.com
   resources:
   - mcpservers/status
   verbs:
   - get
-  - patch
-  - update
