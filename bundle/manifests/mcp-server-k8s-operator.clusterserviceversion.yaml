@@ -106,7 +106,7 @@ spec:
                 - --health-probe-bind-address=:8081
                 command:
                 - /manager
-                image: howlowck/mcp-server-k8s-operator:v0.0.1
+                image: docker.io/howlowck/mcp-server-k8s-operator:v0.0.1
                 livenessProbe:
                   httpGet:
                     path: /healthz
