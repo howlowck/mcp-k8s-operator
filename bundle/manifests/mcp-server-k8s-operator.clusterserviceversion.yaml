@@ -14,11 +14,23 @@ metadata:
             },
             "name": "mcpserver-sample"
           },
-          "spec": null
+          "spec": {
+            "args": [
+              "run",
+              "-i",
+              "--rm",
+              "-e",
+              "GITHUB_PERSONAL_ACCESS_TOKEN",
+              "ghcr.io/github/github-mcp-server"
+            ],
+            "command": "docker",
+            "name": "GitHub",
+            "transport": "stdio"
+          }
         }
       ]
     capabilities: Basic Install
-    createdAt: "2025-04-27T00:15:21Z"
+    createdAt: "2025-04-29T04:01:10Z"
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
   name: mcp-server-k8s-operator.v0.0.1
@@ -106,7 +118,7 @@ spec:
                 - --health-probe-bind-address=:8081
                 command:
                 - /manager
-                image: docker.io/howlowck/mcp-server-k8s-operator:v0.0.1
+                image: docker.io/howlowck/mcp-server-k8s-operator:v0.0.4
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -134,6 +146,9 @@ spec:
                     - ALL
               securityContext:
                 runAsNonRoot: true
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
               serviceAccountName: mcp-server-k8s-operator-controller-manager
               terminationGracePeriodSeconds: 10
       permissions:

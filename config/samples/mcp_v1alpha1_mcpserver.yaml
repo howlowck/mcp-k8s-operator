@@ -6,4 +6,15 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: mcpserver-sample
 spec:
-  # TODO(user): Add fields here
+  transport: "stdio"
+  name: "github-mcp-server-01"
+  command: "docker" # supports "docker", "uvx", "npx"
+  image: "ghcr.io/github/github-mcp-server"
+  args: []
+  env:
+    - name: GITHUB_PERSONAL_ACCESS_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: github-secrets
+          key: GITHUB_TOKEN
+  

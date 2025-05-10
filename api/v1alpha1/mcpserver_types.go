@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -36,6 +37,12 @@ type MCPServerSpec struct {
 
 	// List of arguments for the command
 	Args []string `json:"args"`
+
+	Image string `json:"image"`
+
+	// Env specifies environment variables to set in the container.
+	// +optional
+	Env []corev1.EnvVar `json:"env,omitempty"`
 }
 
 // MCPServerStatus defines the observed state of MCPServer.

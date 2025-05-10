@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: howlowck/mcp-server-k8s-operator
-  newTag: v0.0.1
+  newTag: v0.0.5

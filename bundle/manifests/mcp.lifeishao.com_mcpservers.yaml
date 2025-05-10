@@ -39,13 +39,16 @@ spec:
           spec:
             description: MCPServerSpec defines the desired state of MCPServer.
             properties:
+              image:
+                description: Docker Image of the MCP server
+                type: string
               args:
                 description: List of arguments for the command
                 items:
                   type: string
                 type: array
               command:
-                description: Command to run
+                description: Command to run, supports "docker", "npx", "uvx"
                 type: string
               name:
                 description: Name of the MCP server
@@ -59,6 +62,14 @@ spec:
             - name
             - transport
             type: object
+            allOf:
+            - if:
+                properties:
+                  command:
+                    const: "docker"
+              then:
+                required:
+                - image
           status:
             description: MCPServerStatus defines the observed state of MCPServer.
             type: object

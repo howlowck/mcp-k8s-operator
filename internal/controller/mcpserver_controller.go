@@ -19,12 +19,13 @@ package controller
 import (
 	"context"
 
+	mcpv1alpha1 "github.com/howlowck/mcp-server-k8s-operator/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-
-	mcpv1alpha1 "github.com/howlowck/mcp-server-k8s-operator/api/v1alpha1"
 )
 
 // MCPServerReconciler reconciles a MCPServer object
@@ -61,10 +62,51 @@ func (r *MCPServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	transport := mcpServer.Spec.Transport
 	command := mcpServer.Spec.Command
 	args := mcpServer.Spec.Args
+	image := mcpServer.Spec.Image
+	env := mcpServer.Spec.Env
 
 	log.Info("Reconciling MCPServer", "name", name, "transport", transport, "command", command, "args", args)
 
-	// TODO: Add logic to handle the MCPServer fields, such as creating or updating resources
+	// create a pod
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: req.Namespace,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:  name,
+					Image: image, // Replace with actual image
+					Env:   env,
+				},
+			},
+		},
+	}
+
+	// Set the MCPServer instance as the owner and controller
+	if err := ctrl.SetControllerReference(&mcpServer, pod, r.Scheme); err != nil {
+		log.Error(err, "unable to set controller reference")
+		return ctrl.Result{}, err
+	}
+	// Check if the pod already exists
+	found := &corev1.Pod{}
+	err := r.Get(ctx, client.ObjectKey{Name: name, Namespace: req.Namespace}, found)
+	if err != nil && client.IgnoreNotFound(err) != nil {
+		log.Error(err, "unable to fetch Pod")
+		return ctrl.Result{}, err
+	}
+	if err == nil {
+		log.Info("Pod already exists", "Pod.Name", found.Name)
+	}
+
+	log.Info("Creating Pod", "Pod.Name", pod.Name)
+	err = r.Create(ctx, pod)
+	if err != nil {
+		log.Error(err, "unable to create Pod", "Pod.Name", pod.Name)
+		return ctrl.Result{}, err
+	}
+	log.Info("Pod created successfully", "Pod.Name", pod.Name)
 
 	return ctrl.Result{}, nil
 }
