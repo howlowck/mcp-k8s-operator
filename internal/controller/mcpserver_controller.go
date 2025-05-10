@@ -20,6 +20,7 @@ import (
 	"context"
 
 	mcpv1alpha1 "github.com/howlowck/mcp-server-k8s-operator/api/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -74,21 +75,32 @@ func (r *MCPServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		Stdin: true,
 	}
 
-	// create a pod
-	pod := &corev1.Pod{
+	// create a deployment
+	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: req.Namespace,
 		},
-		Spec: corev1.PodSpec{
-			ShareProcessNamespace: &[]bool{true}[0],
-			Containers: []corev1.Container{
-				mcpServerContainer,
+		Spec: appsv1.DeploymentSpec{
+			Replicas: func() *int32 { i := int32(1); return &i }(),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": name},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"app": name},
+				},
+				Spec: corev1.PodSpec{
+					ShareProcessNamespace: &[]bool{true}[0],
+					Containers: []corev1.Container{
+						mcpServerContainer,
+					},
+				},
 			},
 		},
 	}
 
-	// set command to the string of name, trucate to 15 characters if too long
+	// set command to the string of name, truncate to 15 characters if too long
 	targetCommand := name
 	if len(targetCommand) > 15 {
 		targetCommand = targetCommand[:15]
@@ -108,32 +120,32 @@ func (r *MCPServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 				},
 			},
 		}
-		pod.Spec.Containers = append(pod.Spec.Containers, stdioProxyContainer)
+		deployment.Spec.Template.Spec.Containers = append(deployment.Spec.Template.Spec.Containers, stdioProxyContainer)
 	}
 
 	// Set the MCPServer instance as the owner and controller
-	if err := ctrl.SetControllerReference(&mcpServer, pod, r.Scheme); err != nil {
+	if err := ctrl.SetControllerReference(&mcpServer, deployment, r.Scheme); err != nil {
 		log.Error(err, "unable to set controller reference")
 		return ctrl.Result{}, err
 	}
-	// Check if the pod already exists
-	found := &corev1.Pod{}
+	// Check if the deployment already exists
+	found := &appsv1.Deployment{}
 	err := r.Get(ctx, client.ObjectKey{Name: name, Namespace: req.Namespace}, found)
 	if err != nil && client.IgnoreNotFound(err) != nil {
-		log.Error(err, "unable to fetch Pod")
+		log.Error(err, "unable to fetch Deployment")
 		return ctrl.Result{}, err
 	}
 	if err == nil {
-		log.Info("Pod already exists", "Pod.Name", found.Name)
+		log.Info("Deployment already exists", "Deployment.Name", found.Name)
 	}
 
-	log.Info("Creating Pod", "Pod.Name", pod.Name)
-	err = r.Create(ctx, pod)
+	log.Info("Creating Deployment", "Deployment.Name", deployment.Name)
+	err = r.Create(ctx, deployment)
 	if err != nil {
-		log.Error(err, "unable to create Pod", "Pod.Name", pod.Name)
+		log.Error(err, "unable to create Deployment", "Deployment.Name", deployment.Name)
 		return ctrl.Result{}, err
 	}
-	log.Info("Pod created successfully", "Pod.Name", pod.Name)
+	log.Info("Deployment created successfully", "Deployment.Name", deployment.Name)
 
 	return ctrl.Result{}, nil
 }
