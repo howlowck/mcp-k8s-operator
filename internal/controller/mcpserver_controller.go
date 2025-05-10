@@ -67,6 +67,13 @@ func (r *MCPServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	log.Info("Reconciling MCPServer", "name", name, "transport", transport, "command", command, "args", args)
 
+	mcpServerContainer := corev1.Container{
+		Name:  name,
+		Image: image,
+		Env:   env,
+		Stdin: true,
+	}
+
 	// create a pod
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -74,14 +81,34 @@ func (r *MCPServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 			Namespace: req.Namespace,
 		},
 		Spec: corev1.PodSpec{
+			ShareProcessNamespace: &[]bool{true}[0],
 			Containers: []corev1.Container{
-				{
-					Name:  name,
-					Image: image, // Replace with actual image
-					Env:   env,
-				},
+				mcpServerContainer,
 			},
 		},
+	}
+
+	// set command to the string of name, trucate to 15 characters if too long
+	targetCommand := name
+	if len(targetCommand) > 15 {
+		targetCommand = targetCommand[:15]
+	}
+
+	if transport == "stdio" {
+		// add stdin and tty to mcp server container
+		mcpServerContainer.Stdin = true
+		mcpServerContainer.TTY = true
+		stdioProxyContainer := corev1.Container{
+			Name:  name + "stdio-proxy",
+			Image: "howlowck/stdio-jsonrpc-proxy:0.4.0",
+			Env: []corev1.EnvVar{
+				{
+					Name:  "TARGET_COMMAND",
+					Value: targetCommand,
+				},
+			},
+		}
+		pod.Spec.Containers = append(pod.Spec.Containers, stdioProxyContainer)
 	}
 
 	// Set the MCPServer instance as the owner and controller
