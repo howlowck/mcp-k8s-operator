@@ -15,25 +15,30 @@ metadata:
             "name": "mcpserver-sample"
           },
           "spec": {
-            "args": [
-              "run",
-              "-i",
-              "--rm",
-              "-e",
-              "GITHUB_PERSONAL_ACCESS_TOKEN",
-              "ghcr.io/github/github-mcp-server"
-            ],
+            "args": [],
             "command": "docker",
-            "name": "GitHub",
+            "env": [
+              {
+                "name": "GITHUB_PERSONAL_ACCESS_TOKEN",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "GITHUB_TOKEN",
+                    "name": "github-secrets"
+                  }
+                }
+              }
+            ],
+            "image": "ghcr.io/github/github-mcp-server",
+            "name": "github-mcp-server-01",
             "transport": "stdio"
           }
         }
       ]
     capabilities: Basic Install
-    createdAt: "2025-04-29T04:01:10Z"
+    createdAt: "2025-05-10T01:15:01Z"
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
-  name: mcp-server-k8s-operator.v0.0.1
+  name: mcp-server-k8s-operator.v0.0.5
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -118,7 +123,7 @@ spec:
                 - --health-probe-bind-address=:8081
                 command:
                 - /manager
-                image: docker.io/howlowck/mcp-server-k8s-operator:v0.0.4
+                image: howlowck/mcp-server-k8s-operator:v0.0.5
                 livenessProbe:
                   httpGet:
                     path: /healthz
@@ -208,4 +213,4 @@ spec:
   maturity: alpha
   provider:
     name: lifeishao.com
-  version: 0.0.1
+  version: 0.0.5
